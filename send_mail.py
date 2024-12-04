@@ -22,6 +22,3 @@ def send_email(smtp_server, port, sender_email, recipient_email, ciphertext, sig
         server.starttls()
         server.login(sender_email, "your_password")
         server.send_message(msg)
-
-# Example usage
-send_email("smtp.example.com", 587, "sender@example.com", "receiver@example.com", ciphertext, signature, nonce, tag)

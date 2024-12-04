@@ -22,5 +22,3 @@ def generate_rsa_keys():
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         ))
-
-generate_rsa_keys()

@@ -1,7 +1,6 @@
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.hashes import SHA256
-from cryptography.hazmat.primitives.hmac import HMAC
 from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.hashes import SHA256
 from cryptography.hazmat.primitives import serialization
 import os
 
@@ -12,6 +11,13 @@ def encrypt_email(content, symmetric_key):
     encryptor = cipher.encryptor()
     ciphertext = encryptor.update(content.encode()) + encryptor.finalize()
     return nonce, ciphertext, encryptor.tag
+
+# Decrypt email content using AES-GCM
+def decrypt_email(ciphertext, nonce, tag, symmetric_key):
+    cipher = Cipher(algorithms.AES(symmetric_key), modes.GCM(nonce, tag))
+    decryptor = cipher.decryptor()
+    plaintext = decryptor.update(ciphertext) + decryptor.finalize()
+    return plaintext
 
 # Sign email content using RSA
 def sign_email(content, private_key_path):
@@ -28,9 +34,21 @@ def sign_email(content, private_key_path):
     )
     return signature
 
-# Example usage
-content = "Confidential email content"
-symmetric_key = os.urandom(32)
-
-nonce, ciphertext, tag = encrypt_email(content, symmetric_key)
-signature = sign_email(content, "private_key.pem")
+# Verify email signature using RSA
+def verify_signature(content, signature, public_key_path):
+    with open(public_key_path, "rb") as key_file:
+        public_key = serialization.load_pem_public_key(key_file.read())
+    
+    try:
+        public_key.verify(
+            signature,
+            content.encode(),
+            padding.PSS(
+                mgf=padding.MGF1(SHA256()),
+                salt_length=padding.PSS.MAX_LENGTH,
+            ),
+            SHA256(),
+        )
+        return True
+    except Exception:
+        return False

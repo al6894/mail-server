@@ -1,5 +1,11 @@
-*/__pycache__
-.pytest_cache
+# pycache
+__pycache__/
+
+# pytest
+.pytest_cache/
 
 # venv
 venv/
+
+# .env
+.env
