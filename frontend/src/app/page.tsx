@@ -1,101 +1,165 @@
-import Image from "next/image";
+"use client";
+import React, { useState } from "react";
 
-export default function Home() {
+const App: React.FC = () => {
+  const [formData, setFormData] = useState({
+    senderEmail: "",
+    recipientEmail: "",
+    subject: "",
+    body: "",
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Form Data Submitted:", formData);
+    // Here you can make an API call to send the formData to the backend
+    // e.g., fetch('/api/send-email', { method: 'POST', body: JSON.stringify(formData) })
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <>
+      <header style={styles.header}>
+        <div style={styles.logoContainer}>
+          <img src="/mail.svg" alt="Mail Icon" style={styles.icon} />
+          <h1 style={styles.title}>SecureMail</h1>
         </div>
+      </header>
+      <main style={styles.main}>
+        <form style={styles.form} onSubmit={handleSubmit}>
+          <label style={styles.label}>
+            Sender Email:
+            <input
+              type="email"
+              name="senderEmail"
+              value={formData.senderEmail}
+              onChange={handleChange}
+              style={styles.input}
+              placeholder="Enter sender email"
+            />
+          </label>
+          <label style={styles.label}>
+            Recipient Email:
+            <input
+              type="email"
+              name="recipientEmail"
+              value={formData.recipientEmail}
+              onChange={handleChange}
+              style={styles.input}
+              placeholder="Enter recipient email"
+            />
+          </label>
+          <label style={styles.label}>
+            Subject:
+            <input
+              type="text"
+              name="subject"
+              value={formData.subject}
+              onChange={handleChange}
+              style={styles.input}
+              placeholder="Enter subject"
+            />
+          </label>
+          <label style={styles.label}>
+            Email Body:
+            <textarea
+              name="body"
+              value={formData.body}
+              onChange={handleChange}
+              style={styles.textarea}
+              placeholder="Write your email here"
+            />
+          </label>
+          <button type="submit" style={styles.button}>
+            Submit
+          </button>
+        </form>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    </>
   );
-}
+};
+
+const styles: { [key: string]: React.CSSProperties } = {
+  header: {
+    display: "flex",
+    alignItems: "center",
+    padding: "10px 20px",
+    backgroundColor: "#f5f5f5",
+    borderBottom: "1px solid #ccc",
+  },
+  logoContainer: {
+    display: "flex",
+    alignItems: "center",
+  },
+  icon: {
+    width: 75,
+    height: 75,
+    marginRight: "10px",
+  },
+  title: {
+    margin: 0,
+    fontSize: "48px",
+    fontWeight: "bold",
+    color: "#333",
+  },
+  main: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "calc(100vh - 100px)",
+    padding: "20px",
+    backgroundColor: "#f9f9f9",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    width: "400px",
+    gap: "15px",
+    padding: "20px",
+    border: "1px solid #ccc",
+    borderRadius: "8px",
+    backgroundColor: "#fff",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+  },
+  label: {
+    display: "flex",
+    flexDirection: "column",
+    fontWeight: "bold",
+    marginBottom: "5px",
+  },
+  input: {
+    padding: "10px",
+    border: "1px solid #ccc",
+    borderRadius: "4px",
+    fontSize: "16px",
+  },
+  textarea: {
+    padding: "10px",
+    border: "1px solid #ccc",
+    borderRadius: "4px",
+    fontSize: "16px",
+    height: "100px",
+    resize: "none",
+  },
+  button: {
+    padding: "10px 20px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    color: "#fff",
+    backgroundColor: "#007BFF",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    textAlign: "center",
+    alignSelf: "center",
+  },
+};
+
+export default App;

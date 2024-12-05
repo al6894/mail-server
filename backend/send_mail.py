@@ -7,12 +7,12 @@ import os
 
 load_dotenv()
 
-def send_email(smtp_server, port, sender_email, recipient_email, ciphertext, signature, nonce, tag):
+def send_email(smtp_server, port, sender_email, recipient_email, subject, ciphertext, signature, nonce, tag):
     # Create the email
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = recipient_email
-    msg['Subject'] = "Secure Email"
+    msg['Subject'] = subject
     
     # Attach encrypted content and metadata
     msg.attach(MIMEText("Encrypted email content attached.", 'plain'))
