@@ -1,0 +1,14 @@
+# pycache
+__pycache__/
+
+# pytest
+.pytest_cache/
+
+# venv
+venv/
+
+# .env
+.env
+
+private_key.pem
+public_key.pem
