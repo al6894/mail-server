@@ -19,8 +19,22 @@ const App: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form Data Submitted:", formData);
-    // Here you can make an API call to send the formData to the backend
-    // e.g., fetch('/api/send-email', { method: 'POST', body: JSON.stringify(formData) })
+
+    fetch("http://127.0.0.1:5000/send-secure-email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Response from backend:", data);
+        alert(data.message || data.error);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   };
 
   return (

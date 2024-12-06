@@ -1,5 +1,6 @@
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from dotenv import load_dotenv
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from email.utils import formataddr
@@ -10,11 +11,11 @@ from crypto_utils import encrypt_email, sign_email
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 
 # SMTP Configuration
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 PASSWORD = os.getenv("PW")
 
 def prepare_email_content(content):
