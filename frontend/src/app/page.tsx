@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import Link from "next/link";
 
 const App: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -29,11 +30,27 @@ const App: React.FC = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Response from backend:", data);
+        console.log("Response from secure API:", data);
         alert(data.message || data.error);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        console.error("Error in secure API:", error);
+      });
+
+    fetch("http://127.0.0.1:5000/send-insecure-email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Response from insecure API:", data);
+        alert(data.message || data.error);
+      })
+      .catch((error) => {
+        console.error("Error in insecure API:", error);
       });
   };
 
@@ -46,6 +63,10 @@ const App: React.FC = () => {
         </div>
       </header>
       <main style={styles.main}>
+        {/* Navigation Button to Metrics Page */}
+        <Link href="/metrics">
+          <button style={styles.metricsButton}>View Metrics</button>
+        </Link>
         <form style={styles.form} onSubmit={handleSubmit}>
           <label style={styles.label}>
             Sender Email:
@@ -173,6 +194,17 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: "pointer",
     textAlign: "center",
     alignSelf: "center",
+  },
+  metricsButton: {
+    marginBottom: "20px",
+    padding: "10px 20px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    color: "#fff",
+    backgroundColor: "#28A745",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
   },
 };
 
