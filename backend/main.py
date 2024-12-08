@@ -3,6 +3,7 @@ import time
 import hmac
 import hashlib
 import smtplib
+import uuid
 from base64 import b64decode
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -24,21 +25,34 @@ SMTP_SERVER = "localhost"
 SMTP_PORT = 1025
 PASSWORD = os.getenv("PW")
 
-def prepare_email_content(content, symmetric_key):
+def prepare_email_content(body):
     try:
+        symmetric_key = os.getenv("SHARED_KEY")
+
+        # Padding to account for missing = in .env for the key
+        missing_padding = len(symmetric_key) % 4
+        if missing_padding:
+            symmetric_key += '=' * (4 - missing_padding)
+        
+        symmetric_key = b64decode(symmetric_key)
+
         # Generate IV (Initialization Vector) for AES
         iv = os.urandom(16)
         cipher = Cipher(algorithms.AES(symmetric_key), modes.CFB(iv))
         encryptor = cipher.encryptor()
 
         # Encrypt the content using AES
-        ciphertext = encryptor.update(content.encode()) + encryptor.finalize()
+        ciphertext = encryptor.update(body.encode()) + encryptor.finalize()
 
-        # Generate HMAC for the ciphertext
-        hmac_key = symmetric_key  # Reusing symmetric key for HMAC
-        mac = hmac.new(hmac_key, ciphertext, hashlib.sha256).digest()
+        # Add a unique nonce and timestamp to prevent replay attacks
+        nonce = str(uuid.uuid4()).encode()
+        timestamp = str(int(time.time())).encode()
 
-        return iv, ciphertext, mac
+        # Create a message digest for integrity (HMAC) 
+        hmac_data = ciphertext+nonce+timestamp
+        hmac_signature = hmac.new(symmetric_key, hmac_data, hashlib.sha256).digest()
+        
+        return iv, ciphertext, hmac_signature, nonce, timestamp
     except Exception as e:
         raise RuntimeError(f"Error preparing email content: {e}")
     
@@ -49,6 +63,7 @@ metrics = {
 
 @app.route('/send-secure-email', methods=['POST'])
 def send_secure_email():
+    start_time = time.perf_counter()
     data = request.json
     sender_email = data.get("senderEmail")
     recipient_email = data.get("recipientEmail")
@@ -59,18 +74,8 @@ def send_secure_email():
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        start_time = time.perf_counter()
-        # Read the key from .env
-        key_base64 = os.getenv("SHARED_KEY")
 
-        # Add padding if needed
-        missing_padding = len(key_base64) % 4
-        if missing_padding:
-            key_base64 += '=' * (4 - missing_padding)
-
-        # Decode the Base64 key
-        symmetric_key = b64decode(key_base64)
-        iv, ciphertext, hmac_signature = prepare_email_content(body, symmetric_key)
+        iv, ciphertext, hmac_signature, nonce, timestamp = prepare_email_content(body)
         encryption_time = time.perf_counter() - start_time
 
         # Send the email
@@ -81,8 +86,10 @@ def send_secure_email():
             recipient_email=recipient_email,
             subject=subject,
             ciphertext=ciphertext,
-            hmac_signature=hmac_signature,
             iv=iv,
+            hmac_signature=hmac_signature,
+            nonce=nonce,
+            timestamp=timestamp,
         )
         send_time = time.perf_counter() - encryption_time
         total_time = start_time + encryption_time + send_time
@@ -98,6 +105,7 @@ def send_secure_email():
 
 @app.route('/send-insecure-email', methods=['POST'])
 def send_insecure_email():
+    start_time = time.perf_counter()
     server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT) # Local server to test MITM attack
     server.set_debuglevel(1)
     data = request.json
@@ -112,22 +120,18 @@ def send_insecure_email():
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        # Start performance tracking
-        start_time = time.perf_counter()
-
-        # Send the email (no security measures)
         send_unencrypted_email(
             smtp_server=SMTP_SERVER,
             port=SMTP_PORT,
             sender_email=sender_email,
             recipient_email=recipient_email,
             subject=subject,
-            body=body,  # No encryption/signing
+            body=body, 
         )
 
-        # Calculate time taken
         elapsed_time = time.perf_counter() - start_time
         metrics["non_secure"].append(elapsed_time)
+
         return jsonify({
             "message": f"Insecure email sent successfully to {recipient_email}!",
             "time_taken": elapsed_time,
