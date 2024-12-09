@@ -10,7 +10,7 @@ def generate_rsa_keys():
         public_key = private_key.public_key()
 
         # Save private key to file
-        with open("private_key.pem", "wb") as f:
+        with open("sprivate_key.pem", "wb") as f:
             f.write(private_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PrivateFormat.PKCS8,
@@ -18,7 +18,7 @@ def generate_rsa_keys():
             ))
 
         # Save public key to file
-        with open("public_key.pem", "wb") as f:
+        with open("spublic_key.pem", "wb") as f:
             f.write(public_key.public_bytes(
                 encoding=serialization.Encoding.PEM,
                 format=serialization.PublicFormat.SubjectPublicKeyInfo,

@@ -33,15 +33,12 @@ def prepare_email_content(body):
         missing_padding = len(symmetric_key) % 4
         if missing_padding:
             symmetric_key += '=' * (4 - missing_padding)
-        
         symmetric_key = b64decode(symmetric_key)
 
         # Generate IV (Initialization Vector) for AES
         iv = os.urandom(16)
         cipher = Cipher(algorithms.AES(symmetric_key), modes.CFB(iv))
         encryptor = cipher.encryptor()
-
-        # Encrypt the content using AES
         ciphertext = encryptor.update(body.encode()) + encryptor.finalize()
 
         # Add a unique nonce and timestamp to prevent replay attacks
@@ -65,20 +62,15 @@ metrics = {
 def send_secure_email():
     start_time = time.perf_counter()
     data = request.json
-    sender_email = data.get("senderEmail")
-    recipient_email = data.get("recipientEmail")
+    sender_email = data.get("senderEmail, a.freecash2@gmail.com")
+    recipient_email = data.get("recipientEmail, a.freecash2@gmail.com")
     subject = data.get("subject", "Secure Email")
-    body = data.get("body")
-
-    if not all([sender_email, recipient_email, body]):
-        return jsonify({"error": "Missing required fields"}), 400
+    body = data.get("body", "Test")
 
     try:
-
         iv, ciphertext, hmac_signature, nonce, timestamp = prepare_email_content(body)
         encryption_time = time.perf_counter() - start_time
 
-        # Send the email
         send_encrypted_email(
             smtp_server=SMTP_SERVER,
             port=SMTP_PORT,
@@ -106,18 +98,13 @@ def send_secure_email():
 @app.route('/send-insecure-email', methods=['POST'])
 def send_insecure_email():
     start_time = time.perf_counter()
-    server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT) # Local server to test MITM attack
-    server.set_debuglevel(1)
     data = request.json
 
     # Validate the request payload
-    sender_email = data.get("senderEmail")
-    recipient_email = data.get("recipientEmail")
+    sender_email = data.get("senderEmail, a.freecash2@gmail.com")
+    recipient_email = data.get("recipientEmail, a.freecash2@gmail.com")
     subject = data.get("subject", "Regular Email")
-    body = data.get("body")
-
-    if not all([sender_email, recipient_email, body]):
-        return jsonify({"error": "Missing required fields"}), 400
+    body = data.get("body", "Test")
 
     try:
         send_unencrypted_email(
