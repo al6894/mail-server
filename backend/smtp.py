@@ -158,7 +158,6 @@ class SecureHandler:
             print(f"Plaintext Message: {email_content}")
             return '250 OK'
 
-# Main script to start the SMTP server
 if __name__ == "__main__":
     handler = SecureHandler()
     controller = Controller(handler, hostname="localhost", port=1025)
