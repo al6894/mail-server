@@ -1,0 +1,11 @@
+import json
+
+decoded_string = """
+{"encrypted_data": "opOoJQUiyhbz4uSo4/U/MBMWr/tslLsABa8v1oyqJCzf1Wf0uBRjdg73rdJbQsuDu7K0C87mCebZyThEbHyxD3UY9tzXT/WLw5io23iGaIbQcKT+FzgCLwOA7j/sye7leVu5pYruB8CDaSqzr8THbrSCdNZJ5Z/ilhiARRcHrnBgYPGPK1wFH2z7kdd1QWAF0hBhG4pL2I3MiPXbO4YYUTk4GMRQUi5umZwZ", "iv": "NpqAGyY8YZbT9BIvwAjyaQ==", "signature": "BXeV8TQAd7MofGj0DdS4R6BuTr4U/Y8m5cM4s2UOmj5CHA4BAPU/JPm2KKohHY/nkyk2UcneG93NvPdX9dEXho/cmL9I1iiBEqQqzm/m0zyYsvWYvNEmfWgYq2fW9SxIoXgUui0JECFZw5ut9WU98dEeQelZAfg8XJO6cE7mtO6yqRD3llS3fequGENVlnOfe9H8ExnovOWKOoIwqUjAb02KcqNOcO61hJa4gkqDUUpC9JYGQeUjrmQhS7Dy1OjzIs2NEnRjN30Zxzl5BByBAHoyP+kt9vsiV9AG2lN4Q04nMRLTataVt7NL258lxUxoQoAR6DytXvmCwSoJdGRByg==", "encrypted_aes_key": "f7En7gBvK4h5rZxarsplKi9COR7PbVuAdI09/s5b+Wv1CSkAmgKsGWfYMHewgtbNyIYTUVoJty2yEddJqsnh2RXNAOyd7SBAihPaoMdsXEfq9cTF3SslR5r0rrVPRXZrbhb8NhD2cfyp3VhNEJWXOqXeWrcGBPmz9zUk0UERrH9N5lvWnvgtM+kGKzCqQwwe+OCSRGjyV9T40omMetJio5/DG9MWXqHUE9qAAnIdbftqECGCZjfSdmXeNOi/TiHxnxNZIOshiqXH4Tg2hjPHqPTEiGJry1VONBDFqwIPDRZ4KOO8h0pJWRH5xPNRC0u1FEHOUEIA7mGqUlkcKl2bEg=="}
+"""
+
+try:
+    json_payload = json.loads(decoded_string)
+    print(f"Parsed JSON Object: {json_payload}")
+except Exception as e:
+    print(f"Error parsing JSON: {e}")
