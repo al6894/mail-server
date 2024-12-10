@@ -40,6 +40,7 @@ class SecureHandler:
         self.valid_window = 10  # Valid time window in seconds (e.g., 5 minutes)
 
     async def handle_DATA(self, server, session, envelope):
+        print(f"Raw email content: {envelope.content.decode('utf-8')}")
         mime_message = message_from_bytes(envelope.content)
         if mime_message.is_multipart():
             for part in mime_message.walk():
@@ -128,7 +129,7 @@ class SecureHandler:
         try:
             current_time = int(time.time())
             if parsed_data['nonce'] in self.processed_nonces:
-                print(f"FOUND: {self.processed_nonces}")
+                #print(f"FOUND: {self.processed_nonces}")
                 stored_entry = self.processed_nonces[parsed_data['nonce']]
                 stored_time = int(stored_entry["timestamp"])
                 stored_hash = stored_entry["hash"]
@@ -140,7 +141,7 @@ class SecureHandler:
                 if stored_hash == current_payload_hash:
                     return 550, b'Replay Attack Detected'
             else:
-                print(f"NEW: {self.processed_nonces}")
+                #print(f"NEW: {self.processed_nonces}")
                 string_decoded_data = decrypted_data.decode('utf-8')
                 parsed_data = json.loads(string_decoded_data)
                 message_time = int(parsed_data['timestamp'])
@@ -171,12 +172,8 @@ class SecureHandler:
 
             # Compare the received HMAC with the computed HMAC
             if not hmac.compare_digest(received_hmac, computed_hmac):
-                print("HMAC verification failed: data integrity compromised.")
                 return 550, b'HMAC Verification Failed'
-
-            print("HMAC verification successful.")
         except Exception as e:
-            print(f"Error verifying HMAC: {e}")
             return 550, b'HMAC Verification Failed'
         return '250 OK'
 

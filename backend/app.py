@@ -53,6 +53,8 @@ def send_secure_email():
         hmac_signature = hmac.new(symmetric_key, hmac_data, hashlib.sha256).digest()
 
         email_data = {
+            "from": sender_email,
+            "to": recipient_email,
             "subject": subject,
             "body": body,
             "hmac": b64encode(hmac_signature).decode('utf-8'),  
@@ -111,9 +113,9 @@ def send_secure_email():
         wrapped_payload = encodebytes(serialized_payload)
         # Create a MIMEText email
         mime_message = MIMEText(wrapped_payload.decode('utf-8'), 'plain')
-        mime_message['From'] = sender_email
-        mime_message['To'] = recipient_email
-        mime_message['Subject'] = subject
+        mime_message['From'] = "encrypted_sender@example.com"
+        mime_message['To'] = "encrypted_recipient@example.com"
+        mime_message['Subject'] = "Encrypted Email"
 
         # Step 8: Send the email with the payload
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
