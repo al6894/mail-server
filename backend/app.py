@@ -26,31 +26,8 @@ CORS(app)
 SMTP_SERVER = "localhost"
 SMTP_PORT = 1025
 PASSWORD = os.getenv("PW")
-
-def prepare_email_content(body):
-    try:
-        symmetric_key = os.getenv("SHARED_KEY")
-        # Padding to account for missing = in .env for the key
-        missing_padding = len(symmetric_key) % 4
-        if missing_padding:
-            symmetric_key += '=' * (4 - missing_padding)
-        symmetric_key = b64decode(symmetric_key)
-
-        # Add a unique nonce and timestamp to prevent replay attacks
-        nonce = str(uuid.uuid4()).encode()
-        timestamp = str(int(time.time())).encode()
-
-        # Create a message digest for integrity (HMAC) 
-        hmac_data = body.encode() + nonce + timestamp
-        hmac_signature = hmac.new(symmetric_key, hmac_data, hashlib.sha256).digest()
-        return hmac_signature, nonce, timestamp
-    except Exception as e:
-        raise RuntimeError(f"Error preparing email content: {e}")
     
-metrics = {
-    "secure": [],
-    "non_secure": []
-}
+metrics = []
 
 @app.route('/send-secure-email', methods=['POST'])
 def send_secure_email():
@@ -60,10 +37,21 @@ def send_secure_email():
     recipient_email = data.get("recipientEmail", "a.freecash2@gmail.com")
     subject = data.get("subject", "Secure Email")
     body = data.get("body", "Test")
+    nonce = data.get("nonce") or str(uuid.uuid4()).encode()
+    timestamp = data.get("timestamp") or str(int(time.time())).encode()
+
 
     try:
         # Step 1: Prepare HMAC signature and metadata
-        hmac_signature, nonce, timestamp = prepare_email_content(body)
+        symmetric_key = os.getenv("SHARED_KEY")
+        # Padding to account for missing = in .env for the key
+        missing_padding = len(symmetric_key) % 4
+        if missing_padding:
+            symmetric_key += '=' * (4 - missing_padding)
+        symmetric_key = b64decode(symmetric_key)
+        hmac_data = body.encode() + nonce + timestamp
+        hmac_signature = hmac.new(symmetric_key, hmac_data, hashlib.sha256).digest()
+
         email_data = {
             "subject": subject,
             "body": body,
@@ -133,45 +121,15 @@ def send_secure_email():
 
         # Measure time taken
         total_time = time.perf_counter() - start_time
-        metrics["secure"].append(total_time)
+        metrics.append(total_time)
 
         return jsonify({
             "message": f"Secure email sent successfully to {recipient_email}!",
             "time_taken": total_time,
+            "nonce": email_data["nonce"],
+            "timestamp": email_data["timestamp"]
         }), 200
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route('/send-insecure-email', methods=['POST'])
-def send_insecure_email():
-    start_time = time.perf_counter()
-    data = request.json
-
-    # Validate the request payload
-    sender_email = data.get("senderEmail, a.freecash2@gmail.com")
-    recipient_email = data.get("recipientEmail, a.freecash2@gmail.com")
-    subject = data.get("subject", "Regular Email")
-    body = data.get("body", "Test")
-
-    try:
-        msg = MIMEText(body, 'plain')
-        msg['From'] = sender_email
-        msg['To'] = recipient_email
-        msg['Subject'] = subject
-    
-        # Send the email
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.send_message(msg)
-
-        elapsed_time = time.perf_counter() - start_time
-        metrics["non_secure"].append(elapsed_time)
-
-        return jsonify({
-            "message": f"Insecure email sent successfully to {recipient_email}!",
-            "time_taken": elapsed_time,
-        }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     

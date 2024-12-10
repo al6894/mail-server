@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 const MetricsPage: React.FC = () => {
-  const [metrics, setMetrics] = useState<{
-    secure: number[];
-    non_secure: number[];
-  }>({
-    secure: [],
-    non_secure: [],
-  });
+  const [metrics, setMetrics] = useState<number[]>([]);
 
   useEffect(() => {
     // Fetch metrics from the backend
@@ -25,19 +19,9 @@ const MetricsPage: React.FC = () => {
     <div style={styles.container}>
       <h1 style={styles.heading}>Performance Metrics</h1>
       <div style={styles.section}>
-        <h2>Secure Email Metrics</h2>
+        <h2>Metrics</h2>
         <ul>
-          {metrics.secure.map((time, index) => (
-            <li key={index}>
-              Run {index + 1}: {time.toFixed(2)} seconds
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div style={styles.section}>
-        <h2>Non-Secure Email Metrics</h2>
-        <ul>
-          {metrics.non_secure.map((time, index) => (
+          {metrics.map((time, index) => (
             <li key={index}>
               Run {index + 1}: {time.toFixed(2)} seconds
             </li>

@@ -37,15 +37,7 @@ class SecureHandler:
             self.sender_public_key = load_pem_public_key(key_file.read())
 
         self.processed_nonces = {}  # Dictionary to map nonces to their timestamps
-        self.valid_window = 300  # Valid time window in seconds (e.g., 5 minutes)
-
-    def cleanup_expired_nonces(self):
-        current_time = int(time.time())
-        self.processed_nonces = {
-            nonce: timestamp
-            for nonce, timestamp in self.processed_nonces.items()
-            if current_time - timestamp <= self.valid_window
-        }
+        self.valid_window = 10  # Valid time window in seconds (e.g., 5 minutes)
 
     async def handle_DATA(self, server, session, envelope):
         mime_message = message_from_bytes(envelope.content)
@@ -102,12 +94,9 @@ class SecureHandler:
                 ),
                 SHA256(),
             )
-            print("Signature verification successful.")
         except InvalidSignature:
-            print("Signature verification failed: Invalid signature.")
             return 550, b'Signature Verification Failed'
         except Exception as e:
-            print(f"An error occurred during signature verification: {e}")
             return 550, b'Signature Verification Failed'
                 
         # Decrypt the encrypted data
@@ -115,7 +104,6 @@ class SecureHandler:
             decryptor = cipher.decryptor()
             decrypted_data = decryptor.update(decoded_data) + decryptor.finalize()
         except Exception as e:
-            print(f"Error decrypting email content: {e}")
             return 550, b'Decryption Failed'
         
         # Verify Timestamp (prevent replay attacks)
@@ -128,25 +116,48 @@ class SecureHandler:
             message_time = int(parsed_data['timestamp'])
             current_time = int(time.time())
             
-            # Allow a time window of 5 minutes (300 seconds)
-            if abs(current_time - message_time) > 300:
-                print("Timestamp verification failed: message is too old or too far in the future.")
+            # Allow a time window of 10 seconds
+            if abs(current_time - message_time) > 10:
                 return 550, b'Timestamp Verification Failed'
-            print("Timestamp verification successful.")
         except ValueError:
-            print("Invalid timestamp format.")
             return 550, b'Timestamp Verification Failed'
         except KeyError:
-            print("Timestamp key missing in decoded data.")
             return 550, b'Timestamp Verification Failed'
         
         # Verify Nonce (prevent replay attacks)
-        self.cleanup_expired_nonces()
-        if parsed_data['nonce'] in self.processed_nonces:
-            print("Replay attack detected: nonce has already been used.")
-            return 550, b'Replay Attack Detected'
-        self.processed_nonces[parsed_data['nonce']] = message_time
-        print("Nonce verification successful.")
+        try:
+            current_time = int(time.time())
+            if parsed_data['nonce'] in self.processed_nonces:
+                print(f"FOUND: {self.processed_nonces}")
+                stored_entry = self.processed_nonces[parsed_data['nonce']]
+                stored_time = int(stored_entry["timestamp"])
+                stored_hash = stored_entry["hash"]
+
+                if abs(current_time - stored_time) > self.valid_window:
+                    return 550, b'Expired nonce'
+
+                current_payload_hash = hashlib.sha256(decrypted_data).hexdigest()
+                if stored_hash == current_payload_hash:
+                    return 550, b'Replay Attack Detected'
+            else:
+                print(f"NEW: {self.processed_nonces}")
+                string_decoded_data = decrypted_data.decode('utf-8')
+                parsed_data = json.loads(string_decoded_data)
+                message_time = int(parsed_data['timestamp'])
+
+                if abs(current_time - message_time) > self.valid_window:
+                    return 550, b'Expired nonce'
+                
+                self.processed_nonces[parsed_data['nonce']] = {
+                    "timestamp": message_time,
+                    "hash": hashlib.sha256(decrypted_data).hexdigest()
+                }
+        except KeyError as e:
+            return 550, b'Invalid payload: Missing required field'
+        except ValueError as e:
+            return 550, b'Invalid payload: Malformed data'
+        except Exception as e:
+            return 550, b'Internal Server Error'
 
         # Verify HMAC
         try:
