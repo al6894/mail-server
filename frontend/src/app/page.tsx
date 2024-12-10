@@ -36,22 +36,6 @@ const App: React.FC = () => {
       .catch((error) => {
         console.error("Error in secure API:", error);
       });
-
-    fetch("http://127.0.0.1:5000/send-insecure-email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Response from insecure API:", data);
-        alert(data.message || data.error);
-      })
-      .catch((error) => {
-        console.error("Error in insecure API:", error);
-      });
   };
 
   return (
