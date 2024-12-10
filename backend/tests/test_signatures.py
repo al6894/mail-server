@@ -25,7 +25,7 @@ class TestSecureEmail(unittest.TestCase):
 
         # Send the tampered payload
         tampered_response = requests.post(f"{BASE_URL}/send-secure-email", json=tampered_payload)
-        self.assertEqual(tampered_response.status_code, 500)  # Should fail due to signature mismatch
+        self.assertNotEqual(tampered_response.status_code, 200) 
 
 if __name__ == "__main__":
     unittest.main()

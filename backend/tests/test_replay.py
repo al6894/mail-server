@@ -15,16 +15,14 @@ class TestReplayAttack(unittest.TestCase):
         
         # First request
         first_response = requests.post(f"{BASE_URL}/send-secure-email", json=payload)
-        self.assertEqual(first_response.status_code, 200, "First request should succeed")
+        self.assertEqual(first_response.status_code, 200)
 
         # Extract the returned nonce and timestamp from the first response
         first_json = first_response.json()
         nonce = first_json["nonce"]        # This should be the same nonce used by the server
         timestamp = first_json["timestamp"] # Same timestamp used by the server
 
-        # Now we modify the payload for the second request to include the exact same nonce and timestamp
-        # Since your server must trust client-provided nonce/timestamp, ensure the server code doesn't
-        # generate them again and instead uses the provided ones for HMAC and replay checks.
+        # Modify the payload for the second request to include the exact same nonce and timestamp
         second_payload = payload.copy()
         second_payload["nonce"] = nonce
         second_payload["timestamp"] = timestamp
@@ -35,9 +33,8 @@ class TestReplayAttack(unittest.TestCase):
         # Second request with identical nonce and timestamp
         second_response = requests.post(f"{BASE_URL}/send-secure-email", json=second_payload)
 
-        # Now that both nonce and timestamp are the same, if the server implemented replay detection,
-        # it should return a 550 or similar error.
-        self.assertNotEqual(second_response.status_code, 200, "Second request should fail due to replay attack")
+        # If the server implemented replay detection, it should return a 550 or similar error.
+        self.assertNotEqual(second_response.status_code, 200)
 
 if __name__ == "__main__":
     unittest.main()

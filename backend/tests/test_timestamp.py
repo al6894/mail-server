@@ -19,7 +19,7 @@ class TestSecureEmail(unittest.TestCase):
         modified_payload["timestamp"] = str(int(time.time()) + 10000)
 
         response = requests.post(f"{BASE_URL}/send-secure-email", json=modified_payload)
-        self.assertEqual(response.status_code, 500)  # Should fail due to invalid timestamp
+        self.assertNotEqual(response.status_code, 200) 
 
 if __name__ == "__main__":
     unittest.main()

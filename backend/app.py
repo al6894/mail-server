@@ -25,8 +25,7 @@ CORS(app)
 # SMTP Configuration
 SMTP_SERVER = "localhost"
 SMTP_PORT = 1025
-PASSWORD = os.getenv("PW")
-    
+
 metrics = []
 
 @app.route('/send-secure-email', methods=['POST'])
@@ -75,6 +74,7 @@ def send_secure_email():
         # Step 4: Sign the serialized email data using sender's private RSA key
         with open("sprivate_key.pem", "rb") as key_file:
             sender_private_key = load_pem_private_key(key_file.read(), password=None)
+
         signature = sender_private_key.sign(
             serialized_email_data,
             padding.PSS(
@@ -94,6 +94,7 @@ def send_secure_email():
         # Step 5: Encrypt the AES key using recipient's public RSA key
         with open("rpublic_key.pem", "rb") as key_file:
             recipient_public_key = load_pem_public_key(key_file.read())
+            
         encrypted_aes_key = recipient_public_key.encrypt(
             aes_key,
             padding.OAEP(

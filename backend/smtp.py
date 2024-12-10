@@ -129,7 +129,6 @@ class SecureHandler:
         try:
             current_time = int(time.time())
             if parsed_data['nonce'] in self.processed_nonces:
-                #print(f"FOUND: {self.processed_nonces}")
                 stored_entry = self.processed_nonces[parsed_data['nonce']]
                 stored_time = int(stored_entry["timestamp"])
                 stored_hash = stored_entry["hash"]
@@ -141,7 +140,6 @@ class SecureHandler:
                 if stored_hash == current_payload_hash:
                     return 550, b'Replay Attack Detected'
             else:
-                #print(f"NEW: {self.processed_nonces}")
                 string_decoded_data = decrypted_data.decode('utf-8')
                 parsed_data = json.loads(string_decoded_data)
                 message_time = int(parsed_data['timestamp'])
@@ -162,12 +160,12 @@ class SecureHandler:
 
         # Verify HMAC
         try:
-            body = parsed_data['body'].encode('utf-8')  # Encode string to bytes 
-            nonce = b64decode(parsed_data['nonce'])  # Decode Base64 to bytes
-            timestamp = parsed_data['timestamp'].encode('utf-8')  # Encode string to bytes
-            received_hmac = b64decode(parsed_data['hmac']) # Decode the hmac sent by sender
+            body = parsed_data['body'].encode('utf-8')  
+            nonce = b64decode(parsed_data['nonce'])  
+            timestamp = parsed_data['timestamp'].encode('utf-8')  
+            received_hmac = b64decode(parsed_data['hmac']) 
 
-            hmac_data = body + nonce + timestamp # use same hmac_data creation as sender
+            hmac_data = body + nonce + timestamp 
             computed_hmac = hmac.new(self.symmetric_key, hmac_data, hashlib.sha256).digest()
 
             # Compare the received HMAC with the computed HMAC
