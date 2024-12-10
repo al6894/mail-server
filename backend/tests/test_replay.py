@@ -1,48 +1,43 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from base64 import b64encode
+import unittest
+import requests
+import time
 
-# Replay Attack Simulation
-def replay_attack():
-    # Components of the original message
-    encrypted_message = b'[\xd5\xfd,'
-    nonce = b'b851d4fe-d3c3-4dea-9cf9-c0093414f763'
-    timestamp = b'1733699345'
-    hmac_signature = b'\x01#\xaa&\xbe{\x82\xc6\xc0\xef\x96\xa7mo\xd0\xfc\x04\xe5\xb9\x83\xf51\x0e|\xd3N\x93.\xfe\xc9\xc5X'
-    iv = b'\x8f\xe9\x14\xb5\rg\xafu\x9e\x8f\xf6\x0b\x9f\xc4bj'
+BASE_URL = "http://127.0.0.1:5000"  # URL where the Flask app is running
 
-    # Encode the components in Base64 for sending
-    encrypted_message_encoded = b64encode(encrypted_message).decode()
-    nonce_encoded = b64encode(nonce).decode()
-    timestamp_encoded = b64encode(timestamp).decode()
-    hmac_encoded = b64encode(hmac_signature).decode()
-    iv_encoded = b64encode(iv).decode()
+class TestReplayAttack(unittest.TestCase):
+    def test_replay_attack(self):
+        payload = {
+            "senderEmail": "a.freecash2@gmail.com",
+            "recipientEmail": "a.freecash2@gmail.com",
+            "subject": "Replay Attack Test",
+            "body": "This is a test email to simulate a replay attack.",
+        }
+        
+        # First request
+        first_response = requests.post(f"{BASE_URL}/send-secure-email", json=payload)
+        self.assertEqual(first_response.status_code, 200, "First request should succeed")
 
-    # Construct the email
-    msg = MIMEMultipart()
-    msg['From'] = "attacker@example.com"
-    msg['To'] = "victim@example.com"
-    msg['Subject'] = "Replay Attack Test"
+        # Extract the returned nonce and timestamp from the first response
+        first_json = first_response.json()
+        nonce = first_json["nonce"]        # This should be the same nonce used by the server
+        timestamp = first_json["timestamp"] # Same timestamp used by the server
 
-    # Attach the replayed components
-    msg.attach(MIMEText(f"Ciphertext: {encrypted_message_encoded}", 'plain'))
-    msg.attach(MIMEText(f"HMAC: {hmac_encoded}", 'plain'))
-    msg.attach(MIMEText(f"IV: {iv_encoded}", 'plain'))
-    msg.attach(MIMEText(f"Nonce: {nonce_encoded}", 'plain'))
-    msg.attach(MIMEText(f"Timestamp: {timestamp_encoded}", 'plain'))
+        # Now we modify the payload for the second request to include the exact same nonce and timestamp
+        # Since your server must trust client-provided nonce/timestamp, ensure the server code doesn't
+        # generate them again and instead uses the provided ones for HMAC and replay checks.
+        second_payload = payload.copy()
+        second_payload["nonce"] = nonce
+        second_payload["timestamp"] = timestamp
 
-    # Send the email to the SMTP server
-    smtp_server = "localhost"
-    smtp_port = 1025  # Replace with the actual port used by your SMTP server
+        # Wait to stay within the valid window (e.g., 2 seconds out of 10)
+        time.sleep(2)
 
-    try:
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.send_message(msg)
-            print("Replay attack message sent successfully.")
-    except Exception as e:
-        print(f"Error sending replay attack message: {e}")
+        # Second request with identical nonce and timestamp
+        second_response = requests.post(f"{BASE_URL}/send-secure-email", json=second_payload)
 
+        # Now that both nonce and timestamp are the same, if the server implemented replay detection,
+        # it should return a 550 or similar error.
+        self.assertNotEqual(second_response.status_code, 200, "Second request should fail due to replay attack")
 
 if __name__ == "__main__":
-    replay_attack()
+    unittest.main()
