@@ -36,8 +36,8 @@ def send_secure_email():
     recipient_email = data.get("recipientEmail", "a.freecash2@gmail.com")
     subject = data.get("subject", "Secure Email")
     body = data.get("body", "Test")
-    nonce = data.get("nonce") or str(uuid.uuid4()).encode()
-    timestamp = data.get("timestamp") or str(int(time.time())).encode()
+    nonce = data.get("nonce").encode() or str(uuid.uuid4()).encode()
+    timestamp = data.get("timestamp").encode() or str(int(time.time())).encode()
 
 
     try:

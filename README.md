@@ -2,7 +2,9 @@
 
 A project focused on end-to-end cryptography solutions for a mail server.
 
-## To see the web page:
+## To see the web page (not a requirement for functionality):
+
+Install Node.js then run `npm install` while inside the frontend directory to install all packages inside package.json.
 
 Navigate to the frontend directory with:
 cd frontend
@@ -49,7 +51,19 @@ python3 smtp.py
 
 All email information can be seen in the terminal running the SMTP server once sent.
 
-# Run tests
+## Send an email without the frontend:
+
+Use the provided template in the backend directory, request.py, to create an email of your liking.
+
+Run the request with:
+python request.py
+or
+python3 request.py
+
+The encrypted email can be seen in the terminal running smtp.py. A success message will be displayed in the terminal you ran the
+request from.
+
+## Run tests
 
 All tests can be ran once you are in the backend/tests directory via:
 
@@ -57,7 +71,7 @@ python test_name.py
 or
 python3 test_name.py
 
-# Notes:
+##Notes:
 
 The symmetric key is included in the .env file as SHARED_KEY.
 
