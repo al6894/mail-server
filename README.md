@@ -4,10 +4,12 @@ A project focused on end-to-end cryptography solutions for a mail server.
 
 ## To see the web page (not a requirement for functionality):
 
-Install Node.js then run `npm install` while inside the frontend directory to install all packages inside package.json.
+Install Node.js on your computer [using this link](https://nodejs.org/en).
 
 Navigate to the frontend directory with:
 `cd frontend`
+
+Run `npm install` while inside the frontend directory to install all packages in the included packages.json
 
 Then run the development server:
 
