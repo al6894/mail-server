@@ -7,7 +7,7 @@ A project focused on end-to-end cryptography solutions for a mail server.
 Install Node.js then run `npm install` while inside the frontend directory to install all packages inside package.json.
 
 Navigate to the frontend directory with:
-cd frontend
+`cd frontend`
 
 Then run the development server:
 
@@ -27,27 +27,33 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 Please install all requirements in the requirements.txt file located inside the backend directory.
 
-pip install -r requirements.txt
+`pip install -r requirements.txt`
 
 ## Run the Flask app:
 
 Navigate to the backend directory with:
-cd backend
+`cd backend`
 
 Then run:
+
+```bash
 python app.py
 or
 python3 app.py
+```
 
 ## Run the local smtp server:
 
 Navigate to the backend directory with:
-cd backend
+`cd backend`
 
 Then run:
+
+```bash
 python smtp.py
 or
 python3 smtp.py
+```
 
 All email information can be seen in the terminal running the SMTP server once sent.
 
@@ -56,9 +62,12 @@ All email information can be seen in the terminal running the SMTP server once s
 Use the provided template in the backend directory, request.py, to create an email of your liking.
 
 Run the request with:
+
+```bash
 python request.py
 or
 python3 request.py
+```
 
 The encrypted email can be seen in the terminal running smtp.py. A success message will be displayed in the terminal you ran the
 request from.
@@ -67,11 +76,13 @@ request from.
 
 All tests can be ran once you are in the backend/tests directory via:
 
+```bash
 python test_name.py
 or
 python3 test_name.py
+```
 
-##Notes:
+## Notes:
 
 The symmetric key is included in the .env file as SHARED_KEY.
 
